@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ramanujan's Birthday Magic Square</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0f0e17;
+    color: #fffffe;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ff8906;
+    border: 1px solid #ff8906;
+    border-radius: 100px;
+    padding: 4px 14px;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fffffe;
+    margin-bottom: 0.6rem;
+  }
+
+  h1 span { color: #ff8906; }
+
+  .hero-sub {
+    font-size: 15px;
+    color: #a7a9be;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: #1a1a2e;
+    border: 1px solid #2e2e4a;
+    border-radius: 20px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .inputs-label {
+    font-size: 13px;
+    color: #a7a9be;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .inputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.2rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .input-group label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a7a9be;
+    text-align: center;
+  }
+
+  .input-group input {
+    background: #0f0e17;
+    border: 1.5px solid #2e2e4a;
+    border-radius: 10px;
+    color: #fffffe;
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 4px;
+    width: 100%;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  .input-group input::-webkit-outer-spin-button,
+  .input-group input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: #ff8906;
+  }
+
+  .generate-btn {
+    width: 100%;
+    padding: 14px;
+    background: #ff8906;
+    color: #0f0e17;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:active { transform: scale(0.98); }
+
+  .error {
+    color: #ff6b6b;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  .result { display: none; margin-top: 2rem; }
+
+  .magic-number-display {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .magic-number-display .label {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #a7a9be;
+    margin-bottom: 4px;
+  }
+
+  .magic-number-display .number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #ff8906;
+    line-height: 1;
+  }
+
+  .magic-number-display .formula {
+    font-size: 13px;
+    color: #a7a9be;
+    margin-top: 6px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 1.2rem;
+  }
+
+  .cell {
+    border-radius: 12px;
+    padding: 12px 6px 8px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+
+  .cell .num {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .cell .lbl {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    opacity: 0.75;
+  }
+
+  .row1 { background: #2a1a4e; border-color: #7f77dd; }
+  .row1 .num { color: #c4bcf8; }
+  .row1 .lbl { color: #9f97e8; }
+
+  .row2 { background: #0c2240; border-color: #378add; }
+  .row2 .num { color: #85b7eb; }
+  .row2 .lbl { color: #5a9de0; }
+
+  .row3 { background: #0a2e20; border-color: #1d9e75; }
+  .row3 .num { color: #5dcaa5; }
+  .row3 .lbl { color: #3ab58a; }
+
+  .row4 { background: #2e1e04; border-color: #ef9f27; }
+  .row4 .num { color: #fac775; }
+  .row4 .lbl { color: #e08c1a; }
+
+  .checks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #a7a9be;
+    background: #0f0e17;
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+
+  .check-icon {
+    width: 18px;
+    height: 18px;
+    background: #1d9e75;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+
+  .sum-formula {
+    text-align: center;
+    font-size: 13px;
+    color: #a7a9be;
+    background: #0f0e17;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .sum-formula strong { color: #ff8906; font-weight: 600; }
+
+  .share-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: #ff8906;
+    border: 1.5px solid #ff8906;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .share-btn:hover { background: #ff890615; }
+
+  footer {
+    margin-top: 2.5rem;
+    text-align: center;
+    font-size: 12px;
+    color: #a7a9be;
+    line-height: 1.7;
+  }
+
+  footer a { color: #ff8906; text-decoration: none; }
+
+  @media (max-width: 420px) {
+    .card { padding: 1.4rem 1rem; }
+    .cell .num { font-size: 18px; }
+    .magic-number-display .number { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">Interactive Tool</div>
+  <h1>Ramanujan's <span>Magic Square</span></h1>
+  <p class="hero-sub">Every row, column, diagonal & corner adds up to the same number — your magic number!</p>
+</div>
+
+<div class="card">
+  <p class="inputs-label">Enter your birthdate</p>
+  <div class="inputs">
+    <div class="input-group">
+      <label>Day</label>
+      <input type="number" id="dd" min="1" max="31" placeholder="DD" />
+    </div>
+    <div class="input-group">
+      <label>Month</label>
+      <input type="number" id="mm" min="1" max="12" placeholder="MM" />
+    </div>
+    <div class="input-group">
+      <label>Century</label>
+      <input type="number" id="cc" min="1" max="99" placeholder="CC" />
+    </div>
+    <div class="input-group">
+      <label>Year</label>
+      <input type="number" id="yy" min="0" max="99" placeholder="YY" />
+    </div>
+  </div>
+
+  <button class="generate-btn" onclick="generate()">✦ Generate My Magic Square</button>
+  <p class="error" id="err"></p>
+
+  <div class="result" id="result">
+    <div class="magic-number-display">
+      <div class="label">Your magic number</div>
+      <div class="number" id="magic-num"></div>
+      <div class="formula" id="magic-formula"></div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="checks">
+      <div class="check-item"><div class="check-icon">✓</div> All 4 rows = S</div>
+      <div class="check-item"><div class="check-icon">✓</div> All 4 columns = S</div>
+      <div class="check-item"><div class="check-icon">✓</div> Both diagonals = S</div>
+      <div class="check-item"><div class="check-icon">✓</div> 4 corners = S</div>
+    </div>
+
+    <div class="sum-formula">
+      <strong>S = DD + MM + CC + YY</strong> &nbsp;—&nbsp; that's your magic number!
+    </div>
+
+    <button class="share-btn" onclick="shareResult()">↗ Share My Magic Square</button>
+  </div>
+</div>
+
+<footer>
+  Inspired by <strong>Srinivasa Ramanujan</strong> (22 Dec 1887) — Father of Indian Mathematics<br/>
+  National Mathematics Day: December 22 🇮🇳
+</footer>
+
+<script>
+  let currentDD, currentMM, currentCC, currentYY;
+
+  function generate() {
+    const dd = parseInt(document.getElementById('dd').value);
+    const mm = parseInt(document.getElementById('mm').value);
+    const cc = parseInt(document.getElementById('cc').value);
+    const yy = parseInt(document.getElementById('yy').value);
+    const err = document.getElementById('err');
+
+    if (isNaN(dd) || isNaN(mm) || isNaN(cc) || isNaN(yy)) {
+      err.textContent = 'Please fill in all four fields.'; return;
+    }
+    if (dd < 1 || dd > 31) { err.textContent = 'Day must be between 1 and 31.'; return; }
+    if (mm < 1 || mm > 12) { err.textContent = 'Month must be between 1 and 12.'; return; }
+    err.textContent = '';
+
+    currentDD = dd; currentMM = mm; currentCC = cc; currentYY = yy;
+
+    const S = dd + mm + cc + yy;
+
+    document.getElementById('magic-num').textContent = S;
+    document.getElementById('magic-formula').textContent =
+      dd + ' + ' + mm + ' + ' + cc + ' + ' + yy + ' = ' + S;
+
+    const cells = [
+      { val: dd,    lbl: 'DD',   cls: 'row1' },
+      { val: mm,    lbl: 'MM',   cls: 'row1' },
+      { val: cc,    lbl: 'CC',   cls: 'row1' },
+      { val: yy,    lbl: 'YY',   cls: 'row1' },
+      { val: yy+1,  lbl: 'YY+1', cls: 'row2' },
+      { val: cc-1,  lbl: 'CC-1', cls: 'row2' },
+      { val: mm-3,  lbl: 'MM-3', cls: 'row2' },
+      { val: dd+3,  lbl: 'DD+3', cls: 'row2' },
+      { val: mm-2,  lbl: 'MM-2', cls: 'row3' },
+      { val: dd+2,  lbl: 'DD+2', cls: 'row3' },
+      { val: yy+2,  lbl: 'YY+2', cls: 'row3' },
+      { val: cc-2,  lbl: 'CC-2', cls: 'row3' },
+      { val: cc+1,  lbl: 'CC+1', cls: 'row4' },
+      { val: yy-1,  lbl: 'YY-1', cls: 'row4' },
+      { val: dd+1,  lbl: 'DD+1', cls: 'row4' },
+      { val: mm-1,  lbl: 'MM-1', cls: 'row4' },
+    ];
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    cells.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'cell ' + c.cls;
+      div.innerHTML = '<div class="num">' + c.val + '</div><div class="lbl">' + c.lbl + '</div>';
+      grid.appendChild(div);
+    });
+
+    const result = document.getElementById('result');
+    result.style.display = 'block';
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function shareResult() {
+    const S = currentDD + currentMM + currentCC + currentYY;
+    const text = 'My Ramanujan Magic Square!\nDOB: ' + currentDD + ' | ' + currentMM + ' | ' + currentCC + currentYY + '\nMagic Number = ' + S + ' \u2728\nEvery row, column & diagonal = ' + S + '!\nTry yours \u2192 ';
+    if (navigator.share) {
+      navigator.share({ title: "Ramanujan's Magic Square", text: text, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(text + window.location.href).then(() => {
+        alert('Copied to clipboard! Now paste and share anywhere.');
+      });
+    }
+  }
+
+  document.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+  });
+</script>
+</body>
+</html>
